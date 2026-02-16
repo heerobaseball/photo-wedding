@@ -1,23 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Clock, MapPin, Heart, CheckSquare, Sparkles, Phone, Music, Sun } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('schedule');
 
   // チェックリストの状態管理
-  const [items, setItems] = useState([
-    { id: 1, text: "結婚指輪・婚約指輪", checked: false, essential: true },
-    { id: 2, text: "撮影指示書（ポーズ集）", checked: false, essential: true },
-    { id: 3, text: "肌着・ストッキング", checked: false, essential: true },
-    { id: 4, text: "新郎用靴下（黒/白）", checked: false, essential: true },
-    { id: 5, text: "現金・カード（決済用）", checked: false, essential: true },
-    { id: 6, text: "スマホ・充電器", checked: false, essential: false },
-    { id: 7, text: "手鏡・メイク直し用品", checked: false, essential: false },
-    { id: 8, text: "飲み物（ストロー付き）", checked: false, essential: false },
-    { id: 9, text: "日焼け止め・虫除け", checked: false, essential: false },
-    { id: 10, text: "撮影小物（ガーランド等）", checked: false, essential: false },
-    { id: 11, text: "軽食（ひと口サイズ）", checked: false, essential: false },
-  ]);
+  // ★変更点：保存機能付きのリスト管理
+  const [items, setItems] = useState(() => {
+    // まず保存されたデータがあるか確認
+    const saved = localStorage.getItem("weddingChecklist");
+    if (saved) {
+      return JSON.parse(saved);
+    } else {
+      // 保存データがなければ初期値を使う
+      return [
+        { id: 1, text: "結婚指輪・婚約指輪", checked: false, essential: true },
+        { id: 2, text: "撮影指示書（ポーズ集）", checked: false, essential: true },
+        { id: 3, text: "肌着・ストッキング", checked: false, essential: true },
+        { id: 4, text: "新郎用靴下（黒/白）", checked: false, essential: true },
+        { id: 5, text: "現金・カード（決済用）", checked: false, essential: true },
+        { id: 6, text: "スマホ・充電器", checked: false, essential: false },
+        { id: 7, text: "手鏡・メイク直し用品", checked: false, essential: false },
+        { id: 8, text: "飲み物（ストロー付き）", checked: false, essential: false },
+        { id: 9, text: "日焼け止め・虫除け", checked: false, essential: false },
+        { id: 10, text: "撮影小物（ガーランド等）", checked: false, essential: false },
+        { id: 11, text: "軽食（ひと口サイズ）", checked: false, essential: false },
+      ];
+    }
+  });
+
+  // ★追加点：チェックが変わるたびに自動保存する
+  useEffect(() => {
+    localStorage.setItem("weddingChecklist", JSON.stringify(items));
+  }, [items]);
 
   const toggleCheck = (id) => {
     setItems(items.map(item => 
