@@ -41,12 +41,11 @@ export default function App() {
   };
 
   const scheduleData = [
-    { time: "09:00", title: "お支度場所へ到着", desc: "ノーメイク・前開きのお洋服で" },
-    { time: "09:30", title: "ヘアメイク開始", desc: "新婦様からスタート（約90分）" },
-    { time: "11:00", title: "お着替え・ファーストミート", desc: "新郎様とご対面" },
-    { time: "11:30", title: "移動・撮影開始", desc: "スタジオまたはロケ地へ" },
-    { time: "13:00", title: "撮影終了・着替え", desc: "私服に着替えてデータ確認" },
-    { time: "14:00", title: "解散・ランチへ", desc: "お疲れ様でした！" },
+    { time: "12:50", title: "受付", desc: "現地で着替える場合、撮影開始20分前をめどにご到着ください" },
+    { time: "13:00", title: "撮影開始", desc: "結婚式写真、その後自由撮影" },
+    { time: "14:00", title: "撮影終了", desc: " " },
+    { time: "15:00", title: "お茶会", desc: "場所:" },
+    { time: "16:30", title: "お開き", desc: "ありがとうございました" },
   ];
 
   const shotList = [
@@ -193,11 +192,23 @@ export default function App() {
               <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
               </h3>
-              <p className="text-stone-600 font-bold mb-1">〇〇ウェディングスタジオ</p>
-              <p className="text-sm text-stone-500 mb-3">東京都〇〇区〇〇 1-2-3</p>
+              <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
+              <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町２丁目３ 丸井大宮店 7階</p>
+              <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
+                <iframe 
+                  /* ↓↓↓ この src="◯◯" の中身を、手順1でコピーしたURLと差し替えてください ↓↓↓ */
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.8280303808788!2d139.7645498767755!3d35.68123617258713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188bfbd89f700b%3A0x277c49ba34ed38!2z5p2x5Lqs6aeF!5e0!3m2!1sja!2sjp!4v1700000000000!5m2!1sja!2sjp" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen="" 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
               <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
-                <p>🚃 〇〇駅から徒歩5分</p>
-                <p>🚗 近くにコインパーキング有</p>
+                <p>🚃 大宮駅日口 徒歩1分</p>
+                <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
               </div>
             </div>
 
