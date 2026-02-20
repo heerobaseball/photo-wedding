@@ -173,4 +173,76 @@ export default function App() {
 
         {/* --- PHOTO TAB --- */}
         {activeTab === 'photo' && (
-          <div className="animate-
+          <div className="animate-fade-in">
+            <h2 className="text-xl font-serif text-center mb-6">Shot List</h2>
+            <p className="text-xs text-center text-stone-500 mb-6">カメラマンさんにお願いしたいポーズ</p>
+            <div className="grid grid-cols-2 gap-4">
+              {shotList.map((shot, idx) => (
+                <div key={idx} className="bg-white p-4 rounded-lg shadow-sm border border-stone-100 flex flex-col items-center text-center justify-center aspect-square hover:bg-rose-50 transition-colors">
+                  <Camera className="w-6 h-6 text-rose-300 mb-2" />
+                  <span className="text-sm font-medium text-stone-700">{shot}</span>
+                </div>
+              ))}
+              <div className="bg-stone-100 p-4 rounded-lg border border-dashed border-stone-300 flex flex-col items-center text-center justify-center aspect-square text-stone-400">
+                <span className="text-xs">他にも思いついたら<br/>メモしておこう</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- ACCESS TAB --- */}
+        {activeTab === 'access' && (
+          <div className="animate-fade-in">
+            <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
+            
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
+              <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
+              </h3>
+              <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
+              <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町２丁目３ 丸井大宮店 7階</p>
+              
+              <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen="" 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
+              
+              <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
+                <p>🚃 大宮駅西口 徒歩1分</p>
+                <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100">
+              <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                <Phone className="w-4 h-4 text-rose-500" /> 緊急連絡先
+              </h3>
+              <div className="space-y-2 text-sm">
+                 <div className="flex justify-between border-b border-stone-100 pb-2">
+                   <span className="text-stone-500">スタジオ</span>
+                   <span className="font-mono">03-0000-0000</span>
+                 </div>
+                 <div className="flex justify-between border-b border-stone-100 pb-2">
+                   <span className="text-stone-500">新郎携帯</span>
+                   <span className="font-mono">090-0000-0000</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="text-stone-500">新婦携帯</span>
+                   <span className="font-mono">090-0000-0000</span>
+                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
