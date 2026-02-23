@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Heart, Sparkles } from 'lucide-react';
 
-// ★追加：スライドショー用の画像URL（ご自身の前撮り写真などに自由に変更できます）
+// スライドショー用の画像URL（この中からランダムで1枚選ばれます）
 const introImages = [
   "/1.jpg",
   "/2.jpg"
@@ -10,33 +10,40 @@ const introImages = [
 export default function App() {
   const [activeTab, setActiveTab] = useState('schedule');
   
-  // ★追加：スライドショーの表示判定（セッションストレージに記録がない＝初回アクセス時のみ true）
+  // スライドショーの表示判定（セッションストレージに記録がない＝初回アクセス時のみ true）
   const [showIntro, setShowIntro] = useState(() => {
     return !sessionStorage.getItem('weddingIntroSeen');
   });
-  const [slideIndex, setSlideIndex] = useState(0);
+  
+  // フェードアウト中かどうかの判定
+  const [isFading, setIsFading] = useState(false);
+  
+  // 読み込み時に、配列の中からランダムに1枚の画像を選ぶ
+  const [randomImage] = useState(() => {
+    return introImages[Math.floor(Math.random() * introImages.length)];
+  });
 
-  // ★追加：スライドショーのアニメーションと3秒後の終了処理
+  // スライドショーのアニメーションと終了処理
   useEffect(() => {
     if (!showIntro) return;
 
     // 初回表示したことをブラウザに記憶させる（これでリロード時は出なくなります）
     sessionStorage.setItem('weddingIntroSeen', 'true');
 
-    // 1秒ごとに画像を切り替える（クロスフェード）
-    const slideInterval = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % introImages.length);
-    }, 1000);
+    // 2秒後にフェードアウト（透明になるアニメーション）を開始する
+    const fadeTimer = setTimeout(() => {
+      setIsFading(true);
+    }, 2000);
 
-    // 3秒後（3000ミリ秒後）にスライドショー画面を消す
-    const timer = setTimeout(() => {
+    // 3秒後（フェードアウト完了後）にスライドショー自体をDOMから完全に削除する
+    const removeTimer = setTimeout(() => {
       setShowIntro(false);
     }, 3000);
 
     // クリーンアップ
     return () => {
-      clearInterval(slideInterval);
-      clearTimeout(timer);
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
     };
   }, [showIntro]);
 
@@ -62,125 +69,124 @@ export default function App() {
     { time: "16:30", title: "お開き", desc: "ありがとうございました" },
   ];
 
-  // ★追加：showIntro が true の時（最初の3秒間）は、こちらのスライドショー画面を表示する
-  if (showIntro) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden">
-        {introImages.map((src, index) => (
-          <img
-            key={index}
-            src={src}
-            alt={`intro-slide-${index}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-              index === slideIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-        ))}
-        {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
-        <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
-          <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
-            Welcome
-          </h1>
-        </div>
-      </div>
-    );
-  }
-
-  // ここから下は通常のメイン画面
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-20">
-      {/* Header / Hero Section */}
-      <div className="relative h-64 bg-rose-100 overflow-hidden animate-fade-in">
-        <div className="absolute inset-0 bg-white/30 backdrop-blur-sm z-10"></div>
-        {/* Decorative Circles */}
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-60"></div>
-        <div className="absolute top-20 right-10 w-32 h-32 bg-orange-100 rounded-full blur-3xl opacity-60"></div>
-        
-        <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
-          <p className="text-stone-500 tracking-widest text-sm mb-2">2026.03.21 (SAT)</p>
-          <h1 className="text-3xl font-serif text-stone-700 mb-2">Photo Wedding</h1>
-          <div className="flex items-center gap-3 text-lg font-medium text-stone-600">
-            <span>Hiroki</span>
-            <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
-            <span>Mami</span>
+    <>
+      {/* --- スライドショーのオーバーレイ画面 --- */}
+      {showIntro && (
+        <div 
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${
+            isFading ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <img
+            src={randomImage}
+            alt="intro-slide"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
+          <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
+            <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
+              Welcome
+            </h1>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Navigation Tabs */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2 animate-fade-in">
-        <button 
-          onClick={() => setActiveTab('schedule')}
-          className={`flex flex-col items-center p-2 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-        >
-          <Clock className="w-5 h-5 mb-1" />
-          当日の流れ
-        </button>
-        <button 
-          onClick={() => setActiveTab('access')}
-          className={`flex flex-col items-center p-2 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-        >
-          <MapPin className="w-5 h-5 mb-1" />
-          アクセス
-        </button>
-      </div>
+      {/* --- 通常のメイン画面（スライドショーの下に描画しておくことで、綺麗に透けて見えてきます） --- */}
+      <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-20">
+        {/* Header / Hero Section */}
+        <div className="relative h-64 bg-rose-100 overflow-hidden animate-fade-in">
+          <div className="absolute inset-0 bg-white/30 backdrop-blur-sm z-10"></div>
+          {/* Decorative Circles */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute top-20 right-10 w-32 h-32 bg-orange-100 rounded-full blur-3xl opacity-60"></div>
+          
+          <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
+            <p className="text-stone-500 tracking-widest text-sm mb-2">2026.03.21 (SAT)</p>
+            <h1 className="text-3xl font-serif text-stone-700 mb-2">Photo Wedding</h1>
+            <div className="flex items-center gap-3 text-lg font-medium text-stone-600">
+              <span>Hiroki</span>
+              <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
+              <span>Mami</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Content Area */}
-      <div className="max-w-md mx-auto p-6">
-        
-        {/* --- SCHEDULE TAB --- */}
-        {activeTab === 'schedule' && (
-          <div className="animate-fade-in">
-            <h2 className="text-xl font-serif text-center mb-6 flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-yellow-500" /> Time Schedule
-            </h2>
-            <div className="relative border-l-2 border-rose-200 ml-3 space-y-8 pl-6 py-2">
-              {scheduleData.map((item, index) => (
-                <div key={index} className="relative">
-                  <div className="absolute -left-[31px] top-1 w-4 h-4 bg-rose-400 rounded-full border-2 border-white shadow-sm"></div>
-                  <span className="text-sm font-bold text-rose-500 block mb-1">{item.time}</span>
-                  <h3 className="text-lg font-medium text-stone-800">{item.title}</h3>
-                  <p className="text-stone-500 text-sm mt-1 leading-relaxed">{item.desc}</p>
+        {/* Navigation Tabs */}
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2 animate-fade-in">
+          <button 
+            onClick={() => setActiveTab('schedule')}
+            className={`flex flex-col items-center p-2 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
+          >
+            <Clock className="w-5 h-5 mb-1" />
+            当日の流れ
+          </button>
+          <button 
+            onClick={() => setActiveTab('access')}
+            className={`flex flex-col items-center p-2 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
+          >
+            <MapPin className="w-5 h-5 mb-1" />
+            アクセス
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="max-w-md mx-auto p-6">
+          
+          {/* --- SCHEDULE TAB --- */}
+          {activeTab === 'schedule' && (
+            <div className="animate-fade-in">
+              <h2 className="text-xl font-serif text-center mb-6 flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-500" /> Time Schedule
+              </h2>
+              <div className="relative border-l-2 border-rose-200 ml-3 space-y-8 pl-6 py-2">
+                {scheduleData.map((item, index) => (
+                  <div key={index} className="relative">
+                    <div className="absolute -left-[31px] top-1 w-4 h-4 bg-rose-400 rounded-full border-2 border-white shadow-sm"></div>
+                    <span className="text-sm font-bold text-rose-500 block mb-1">{item.time}</span>
+                    <h3 className="text-lg font-medium text-stone-800">{item.title}</h3>
+                    <p className="text-stone-500 text-sm mt-1 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* --- ACCESS TAB --- */}
+          {activeTab === 'access' && (
+            <div className="animate-fade-in">
+              <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
+              
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
+                </h3>
+                <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
+                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町２丁目３ 丸井大宮店 7階</p>
+                
+                <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen="" 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- ACCESS TAB --- */}
-        {activeTab === 'access' && (
-          <div className="animate-fade-in">
-            <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
-            
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
-              <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
-              </h3>
-              <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
-              <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町２丁目３ 丸井大宮店 7階</p>
-              
-              <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen="" 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+                
+                <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
+                  <p>🚃 大宮駅西口 徒歩1分</p>
+                  <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
+                </div>
               </div>
-              
-              <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
-                <p>🚃 大宮駅西口 徒歩1分</p>
-                <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
-              </div>
+
             </div>
+          )}
 
-          </div>
-        )}
-
+        </div>
       </div>
-    </div>
+    </>
   );
 }
