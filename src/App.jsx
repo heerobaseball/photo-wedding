@@ -47,11 +47,15 @@ export default function App() {
     ));
   };
 
-  const scheduleData = [
+const scheduleData = [
     { time: "12:50", title: "受付", desc: "現地で着替える場合、撮影開始20分前をめどにご到着ください" },
     { time: "13:00", title: "撮影開始", desc: "結婚式写真、その後自由撮影" },
     { time: "14:00", title: "撮影終了", desc: " " },
-    { time: "15:00", title: "お茶会", desc: "場所:<a href="https://maps.app.goo.gl/WnEiV2UgmZ7eTi827" target="_blank" rel="noopener noreferrer" className="text-rose-500 underline font-bold">セレンディピティタータ</a>" },
+    { time: "15:00", title: "お茶会", desc: (
+      <>
+        場所: <a href="https://maps.app.goo.gl/WnEiV2UgmZ7eTi827" target="_blank" rel="noopener noreferrer" className="text-rose-500 underline font-bold">〇〇カフェ（ここをタップ）</a>
+      </>
+    )},
     { time: "16:30", title: "お開き", desc: "ありがとうございました" },
   ];
 
