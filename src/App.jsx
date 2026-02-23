@@ -1,8 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Heart, Sparkles } from 'lucide-react';
 
+// ★追加：スライドショー用の画像URL（ご自身の前撮り写真などに自由に変更できます）
+const introImages = [
+  "/1.jpg",
+  "/2.jpg"
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('schedule');
+  
+  // ★追加：スライドショーの表示判定（セッションストレージに記録がない＝初回アクセス時のみ true）
+  const [showIntro, setShowIntro] = useState(() => {
+    return !sessionStorage.getItem('weddingIntroSeen');
+  });
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  // ★追加：スライドショーのアニメーションと3秒後の終了処理
+  useEffect(() => {
+    if (!showIntro) return;
+
+    // 初回表示したことをブラウザに記憶させる（これでリロード時は出なくなります）
+    sessionStorage.setItem('weddingIntroSeen', 'true');
+
+    // 1秒ごとに画像を切り替える（クロスフェード）
+    const slideInterval = setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % introImages.length);
+    }, 1000);
+
+    // 3秒後（3000ミリ秒後）にスライドショー画面を消す
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 3000);
+
+    // クリーンアップ
+    return () => {
+      clearInterval(slideInterval);
+      clearTimeout(timer);
+    };
+  }, [showIntro]);
 
   // LINEブラウザで開かれたら外部ブラウザ（Safari/Chrome）へ自動で飛ばす
   useEffect(() => {
@@ -26,10 +62,35 @@ export default function App() {
     { time: "16:30", title: "お開き", desc: "ありがとうございました" },
   ];
 
+  // ★追加：showIntro が true の時（最初の3秒間）は、こちらのスライドショー画面を表示する
+  if (showIntro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden">
+        {introImages.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`intro-slide-${index}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              index === slideIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        ))}
+        {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
+        <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
+          <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
+            Welcome
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
+  // ここから下は通常のメイン画面
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-20">
       {/* Header / Hero Section */}
-      <div className="relative h-64 bg-rose-100 overflow-hidden">
+      <div className="relative h-64 bg-rose-100 overflow-hidden animate-fade-in">
         <div className="absolute inset-0 bg-white/30 backdrop-blur-sm z-10"></div>
         {/* Decorative Circles */}
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-60"></div>
@@ -47,7 +108,7 @@ export default function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2 animate-fade-in">
         <button 
           onClick={() => setActiveTab('schedule')}
           className={`flex flex-col items-center p-2 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
