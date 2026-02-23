@@ -1,35 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Clock, MapPin, Heart, CheckSquare, Sparkles, Phone, Music, Sun } from 'lucide-react';
+import { Clock, MapPin, Heart, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('schedule');
-
-  // チェックリストの状態管理（保存機能付き）
-  const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem("weddingChecklist");
-    if (saved) {
-      return JSON.parse(saved);
-    } else {
-      return [
-        { id: 1, text: "結婚指輪・婚約指輪", checked: false, essential: true },
-        { id: 2, text: "撮影指示書（ポーズ集）", checked: false, essential: true },
-        { id: 3, text: "肌着・ストッキング", checked: false, essential: true },
-        { id: 4, text: "新郎用靴下（黒/白）", checked: false, essential: true },
-        { id: 5, text: "現金・カード（決済用）", checked: false, essential: true },
-        { id: 6, text: "スマホ・充電器", checked: false, essential: false },
-        { id: 7, text: "手鏡・メイク直し用品", checked: false, essential: false },
-        { id: 8, text: "飲み物（ストロー付き）", checked: false, essential: false },
-        { id: 9, text: "日焼け止め・虫除け", checked: false, essential: false },
-        { id: 10, text: "撮影小物（ガーランド等）", checked: false, essential: false },
-        { id: 11, text: "軽食（ひと口サイズ）", checked: false, essential: false },
-      ];
-    }
-  });
-
-  // チェックが変わるたびに自動保存する
-  useEffect(() => {
-    localStorage.setItem("weddingChecklist", JSON.stringify(items));
-  }, [items]);
 
   // LINEブラウザで開かれたら外部ブラウザ（Safari/Chrome）へ自動で飛ばす
   useEffect(() => {
@@ -41,13 +14,7 @@ export default function App() {
     }
   }, []);
 
-  const toggleCheck = (id) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, checked: !item.checked } : item
-    ));
-  };
-
-const scheduleData = [
+  const scheduleData = [
     { time: "12:50", title: "受付", desc: "現地で着替える場合、撮影開始20分前をめどにご到着ください" },
     { time: "13:00", title: "撮影開始", desc: "結婚式写真、その後自由撮影" },
     { time: "14:00", title: "撮影終了", desc: " " },
@@ -57,11 +24,6 @@ const scheduleData = [
       </>
     )},
     { time: "16:30", title: "お開き", desc: "ありがとうございました" },
-  ];
-
-  const shotList = [
-    "指輪の交換シーン", "背中合わせで座る", "ベール越しのショット",
-    "遠近法を使った面白写真", "二人の手元のアップ", "自然に歩いている後ろ姿"
   ];
 
   return (
@@ -94,20 +56,6 @@ const scheduleData = [
           当日の流れ
         </button>
         <button 
-          onClick={() => setActiveTab('items')}
-          className={`flex flex-col items-center p-2 text-xs ${activeTab === 'items' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-        >
-          <CheckSquare className="w-5 h-5 mb-1" />
-          持ち物
-        </button>
-        <button 
-          onClick={() => setActiveTab('photo')}
-          className={`flex flex-col items-center p-2 text-xs ${activeTab === 'photo' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-        >
-          <Camera className="w-5 h-5 mb-1" />
-          撮影指示書
-        </button>
-        <button 
           onClick={() => setActiveTab('access')}
           className={`flex flex-col items-center p-2 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
         >
@@ -134,62 +82,6 @@ const scheduleData = [
                   <p className="text-stone-500 text-sm mt-1 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- ITEMS TAB --- */}
-        {activeTab === 'items' && (
-          <div className="animate-fade-in">
-             <h2 className="text-xl font-serif text-center mb-6">Check List</h2>
-             
-             <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 mb-6">
-               <h3 className="text-sm font-bold text-rose-500 mb-3 border-b border-rose-100 pb-2">絶対に忘れてはいけないもの</h3>
-               <div className="space-y-3">
-                 {items.filter(i => i.essential).map(item => (
-                   <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
-                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${item.checked ? 'bg-rose-500 border-rose-500' : 'border-stone-300 bg-white'}`}>
-                       {item.checked && <CheckSquare className="w-3 h-3 text-white" />}
-                     </div>
-                     <input type="checkbox" className="hidden" checked={item.checked} onChange={() => toggleCheck(item.id)} />
-                     <span className={`text-stone-700 transition-all ${item.checked ? 'text-stone-400 line-through' : ''}`}>{item.text}</span>
-                   </label>
-                 ))}
-               </div>
-             </div>
-
-             <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-100">
-               <h3 className="text-sm font-bold text-stone-500 mb-3 border-b border-stone-100 pb-2">あると便利なもの</h3>
-               <div className="space-y-3">
-                 {items.filter(i => !i.essential).map(item => (
-                   <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
-                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${item.checked ? 'bg-rose-500 border-rose-500' : 'border-stone-300 bg-white'}`}>
-                       {item.checked && <CheckSquare className="w-3 h-3 text-white" />}
-                     </div>
-                     <input type="checkbox" className="hidden" checked={item.checked} onChange={() => toggleCheck(item.id)} />
-                     <span className={`text-stone-700 transition-all ${item.checked ? 'text-stone-400 line-through' : ''}`}>{item.text}</span>
-                   </label>
-                 ))}
-               </div>
-             </div>
-          </div>
-        )}
-
-        {/* --- PHOTO TAB --- */}
-        {activeTab === 'photo' && (
-          <div className="animate-fade-in">
-            <h2 className="text-xl font-serif text-center mb-6">Shot List</h2>
-            <p className="text-xs text-center text-stone-500 mb-6">カメラマンさんにお願いしたいポーズ</p>
-            <div className="grid grid-cols-2 gap-4">
-              {shotList.map((shot, idx) => (
-                <div key={idx} className="bg-white p-4 rounded-lg shadow-sm border border-stone-100 flex flex-col items-center text-center justify-center aspect-square hover:bg-rose-50 transition-colors">
-                  <Camera className="w-6 h-6 text-rose-300 mb-2" />
-                  <span className="text-sm font-medium text-stone-700">{shot}</span>
-                </div>
-              ))}
-              <div className="bg-stone-100 p-4 rounded-lg border border-dashed border-stone-300 flex flex-col items-center text-center justify-center aspect-square text-stone-400">
-                <span className="text-xs">他にも思いついたら<br/>メモしておこう</span>
-              </div>
             </div>
           </div>
         )}
@@ -224,25 +116,6 @@ const scheduleData = [
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100">
-              <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-rose-500" /> 緊急連絡先
-              </h3>
-              <div className="space-y-2 text-sm">
-                 <div className="flex justify-between border-b border-stone-100 pb-2">
-                   <span className="text-stone-500">スタジオ</span>
-                   <span className="font-mono">03-0000-0000</span>
-                 </div>
-                 <div className="flex justify-between border-b border-stone-100 pb-2">
-                   <span className="text-stone-500">新郎携帯</span>
-                   <span className="font-mono">090-0000-0000</span>
-                 </div>
-                 <div className="flex justify-between">
-                   <span className="text-stone-500">新婦携帯</span>
-                   <span className="font-mono">090-0000-0000</span>
-                 </div>
-              </div>
-            </div>
           </div>
         )}
 
