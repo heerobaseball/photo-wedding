@@ -81,7 +81,7 @@ export default function App() {
           <img
             src={randomImage}
             alt="intro-slide"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-contain"
           />
           {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
           <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
