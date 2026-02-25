@@ -328,7 +328,8 @@ export default function App() {
                 </div>
                 
                 <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
-                  <p> 西大宮駅から徒歩1分</p>
+                  <p>🚃 西大宮駅から徒歩5分</p>
+                  <p>🚗 駐車場が御座いませんので、西大宮駅周辺のコインパーキングのご利用お願い致します</p>
                 </div>
               </div>
 
