@@ -9,7 +9,7 @@ export async function onRequest(context) {
 
   // ★ここをご自身で設定したユーザー名とパスワードに書き換えてください
   const USERNAME = "guest";     // ユーザー名
-  const PASSWORD = "password123"; // パスワード
+  const PASSWORD = "hiro0321mami"; // パスワード
 
   // 認証情報の作成
   const expectedAuth = "Basic " + btoa(`${USERNAME}:${PASSWORD}`);
