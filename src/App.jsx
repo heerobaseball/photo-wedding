@@ -254,7 +254,7 @@ export default function App() {
               
               <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100">
                 <p className="text-sm text-stone-600 mb-2 px-3 pt-3 leading-relaxed">
-                  アレルギーや、当日配慮してほしいことなどがありましたら、こちらからお気軽にお知らせください。
+                  連絡事項などありましたら、こちらからお気軽にお知らせください。
                 </p>
                 
                 <div className="w-full overflow-hidden rounded-lg">
