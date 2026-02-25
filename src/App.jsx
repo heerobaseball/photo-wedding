@@ -105,7 +105,7 @@ export default function App() {
         場所: <a href="https://maps.app.goo.gl/WnEiV2UgmZ7eTi827" target="_blank" rel="noopener noreferrer" className="text-rose-500 underline font-bold">セレンディピティタータ</a><br />アクセス : JR西大宮駅から徒歩5分
       </>
     )},
-    { time: "16:30", title: "お開き", desc: "ありがとうございました" },
+    { time: "16:30", title: "お開き", desc: "ご参加ありがとうございました  お気をつけてお帰りください" },
   ];
 
 
