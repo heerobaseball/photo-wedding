@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Heart, Sparkles } from 'lucide-react';
+import { Clock, MapPin, Heart, Sparkles, MessageSquare } from 'lucide-react';
 
 // スライドショー用の画像URL（この中からランダムで1枚選ばれます）
 const introImages = [
@@ -92,7 +92,7 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 通常のメイン画面（スライドショーの下に描画しておくことで、綺麗に透けて見えてきます） --- */}
+      {/* --- 通常のメイン画面 --- */}
       <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-20">
         {/* Header / Hero Section */}
         <div className="relative h-64 bg-rose-100 overflow-hidden animate-fade-in">
@@ -116,14 +116,23 @@ export default function App() {
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2 animate-fade-in">
           <button 
             onClick={() => setActiveTab('schedule')}
-            className={`flex flex-col items-center p-2 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
+            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
           >
             <Clock className="w-5 h-5 mb-1" />
             当日の流れ
           </button>
+          
+          <button 
+            onClick={() => setActiveTab('contact')}
+            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'contact' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
+          >
+            <MessageSquare className="w-5 h-5 mb-1" />
+            備考・要望
+          </button>
+
           <button 
             onClick={() => setActiveTab('access')}
-            className={`flex flex-col items-center p-2 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
+            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
           >
             <MapPin className="w-5 h-5 mb-1" />
             アクセス
@@ -152,6 +161,33 @@ export default function App() {
             </div>
           )}
 
+          {/* --- CONTACT TAB --- */}
+          {activeTab === 'contact' && (
+            <div className="animate-fade-in">
+              <h2 className="text-xl font-serif text-center mb-6">Message</h2>
+              
+              <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100">
+                <p className="text-sm text-stone-600 mb-2 px-3 pt-3 leading-relaxed">
+                  アレルギーや、当日配慮してほしいことなどがありましたら、こちらからお気軽にお知らせください。
+                </p>
+                
+                <div className="w-full overflow-hidden rounded-lg">
+                  <iframe 
+                    /* ↓↓↓ この srcの中身をご自身のGoogleフォームのURLに書き換えてください ↓↓↓ */
+                    src="https://docs.google.com/forms/d/e/1FAIpQLScEfJ5EyVlPr5kWWOqe14ENMF2VcZF6AwK5qOGCMogcmzYIUA/viewform?usp=dialog" 
+                    width="100%" 
+                    height="600" 
+                    frameBorder="0" 
+                    marginHeight="0" 
+                    marginWidth="0"
+                  >
+                    読み込んでいます…
+                  </iframe>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* --- ACCESS TAB --- */}
           {activeTab === 'access' && (
             <div className="animate-fade-in">
@@ -166,6 +202,7 @@ export default function App() {
                 
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
                   <iframe 
+                    /* ↓↓↓ この srcの中身をご自身のGoogleマップのURLに書き換えてください ↓↓↓ */
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
                     width="100%" 
                     height="100%" 
