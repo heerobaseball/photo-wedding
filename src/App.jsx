@@ -9,7 +9,7 @@ const introImages = [
 ];
 
 // ★ゲストに案内する共通パスワードを設定します（お好きな文字や数字に変更してください！）
-const GUEST_PASSWORD = "password123"; 
+const GUEST_PASSWORD = "hiro0321mami"; 
 
 export default function App() {
   // ==========================================
