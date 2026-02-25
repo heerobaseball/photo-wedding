@@ -49,9 +49,14 @@ export default function App() {
   const [isFadingIn, setIsFadingIn] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   
-  const [randomImage] = useState(() => {
-    return introImages[Math.floor(Math.random() * introImages.length)];
-  });
+  // ★確実に画像をランダムにするための修正を適用しています
+  const [randomImage, setRandomImage] = useState(introImages[0]);
+
+  useEffect(() => {
+    // 画面が読み込まれた瞬間にサイコロを振り、ランダムな1枚をセットする
+    const randomIndex = Math.floor(Math.random() * introImages.length);
+    setRandomImage(introImages[randomIndex]);
+  }, []);
 
   // スライドショーのアニメーション
   useEffect(() => {
@@ -152,12 +157,12 @@ export default function App() {
       {/* --- スライドショーのオーバーレイ画面 --- */}
       {showIntro && (
         <div 
-          // ★修正：背景（bg-stone-900）は最初から不透明のままにし、消える時（isFadingOut）だけ透明にします
+          // 背景（bg-stone-900）は最初から不透明のままにし、消える時（isFadingOut）だけ透明にします
           className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${
             isFadingOut ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          {/* ★修正：中の画像と文字だけを透明からフワッと表示させます */}
+          {/* 中の画像と文字だけを透明からフワッと表示させます */}
           <div 
             className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
               isFadingIn ? 'opacity-100' : 'opacity-0'
@@ -326,7 +331,6 @@ export default function App() {
                   <p> 西大宮駅から徒歩1分</p>
                 </div>
               </div>
-
 
             </div>
           )}
