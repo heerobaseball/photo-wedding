@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// ★アイコン「Lock」を追加しました
 import { Clock, MapPin, Heart, Sparkles, MessageSquare, Lock } from 'lucide-react';
 
 // スライドショー用の画像URL（この中からランダムで1枚選ばれます）
@@ -8,7 +7,7 @@ const introImages = [
   "/2.jpg"
 ];
 
-// ★ゲストに案内する共通パスワードを設定します（お好きな文字や数字に変更してください！）
+// ゲストに案内する共通パスワード
 const GUEST_PASSWORD = "hiro0321mami"; 
 
 export default function App() {
@@ -46,29 +45,38 @@ export default function App() {
     return !sessionStorage.getItem('weddingIntroSeen');
   });
   
-  const [isFading, setIsFading] = useState(false);
+  // フェードインとフェードアウトの両方を管理するステート
+  const [isFadingIn, setIsFadingIn] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   
   const [randomImage] = useState(() => {
     return introImages[Math.floor(Math.random() * introImages.length)];
   });
 
-  // スライドショーのアニメーション
+  // スライドショーのアニメーション（フェードイン追加版）
   useEffect(() => {
-    // ★ログインしていない時はスライドショーを動かさない
     if (!isAuthenticated || !showIntro) return;
 
     sessionStorage.setItem('weddingIntroSeen', 'true');
 
-    const fadeTimer = setTimeout(() => {
-      setIsFading(true);
-    }, 2000);
+    // 1. 開いてすぐ（0.05秒後）に透明状態からフワッと現れ始める
+    const fadeInTimer = setTimeout(() => {
+      setIsFadingIn(true);
+    }, 50);
 
+    // 2. 4秒後にフワッと消え始める（フェードアウト）
+    const fadeOutTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 4000);
+
+    // 3. 5秒後に完全に画面をDOMから消す
     const removeTimer = setTimeout(() => {
       setShowIntro(false);
-    }, 3000);
+    }, 5000);
 
     return () => {
-      clearTimeout(fadeTimer);
+      clearTimeout(fadeInTimer);
+      clearTimeout(fadeOutTimer);
       clearTimeout(removeTimer);
     };
   }, [isAuthenticated, showIntro]);
@@ -145,7 +153,7 @@ export default function App() {
       {showIntro && (
         <div 
           className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${
-            isFading ? 'opacity-0' : 'opacity-100'
+            isFadingIn && !isFadingOut ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <img
