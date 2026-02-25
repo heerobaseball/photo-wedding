@@ -53,18 +53,18 @@ export default function App() {
     return introImages[Math.floor(Math.random() * introImages.length)];
   });
 
-  // スライドショーのアニメーション（フェードイン追加版）
+  // スライドショーのアニメーション
   useEffect(() => {
     if (!isAuthenticated || !showIntro) return;
 
     sessionStorage.setItem('weddingIntroSeen', 'true');
 
-    // 1. 開いてすぐ（0.05秒後）に透明状態からフワッと現れ始める
+    // 1. 開いてすぐ（0.05秒後）に「写真と文字」がフワッと現れ始める
     const fadeInTimer = setTimeout(() => {
       setIsFadingIn(true);
     }, 50);
 
-    // 2. 4秒後にフワッと消え始める（フェードアウト）
+    // 2. 4秒後に「画面全体」がフワッと消え始める（フェードアウト）
     const fadeOutTimer = setTimeout(() => {
       setIsFadingOut(true);
     }, 4000);
@@ -152,20 +152,28 @@ export default function App() {
       {/* --- スライドショーのオーバーレイ画面 --- */}
       {showIntro && (
         <div 
+          // ★修正：背景（bg-stone-900）は最初から不透明のままにし、消える時（isFadingOut）だけ透明にします
           className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${
-            isFadingIn && !isFadingOut ? 'opacity-100' : 'opacity-0'
+            isFadingOut ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          <img
-            src={randomImage}
-            alt="intro-slide"
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
-          <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
-            <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
-              Welcome
-            </h1>
+          {/* ★修正：中の画像と文字だけを透明からフワッと表示させます */}
+          <div 
+            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+              isFadingIn ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img
+              src={randomImage}
+              alt="intro-slide"
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
+            <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
+              <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
+                Welcome
+              </h1>
+            </div>
           </div>
         </div>
       )}
