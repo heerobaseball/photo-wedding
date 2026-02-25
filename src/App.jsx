@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Heart, Sparkles, MessageSquare } from 'lucide-react';
+// ★アイコン「Lock」を追加しました
+import { Clock, MapPin, Heart, Sparkles, MessageSquare, Lock } from 'lucide-react';
 
 // スライドショー用の画像URL（この中からランダムで1枚選ばれます）
 const introImages = [
@@ -7,47 +8,72 @@ const introImages = [
   "/2.jpg"
 ];
 
+// ★ゲストに案内する共通パスワードを設定します（お好きな文字や数字に変更してください！）
+const GUEST_PASSWORD = "password123"; 
+
 export default function App() {
+  // ==========================================
+  // 1. ログイン状態の管理（ブラウザに記憶させます）
+  // ==========================================
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // 過去にログインして記憶されていれば、最初から true にする
+    return localStorage.getItem('weddingAuth') === 'true';
+  });
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState(false);
+
+  // ログインボタンを押したときの処理
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (passwordInput === GUEST_PASSWORD) {
+      // パスワードが合っていれば記憶してメイン画面へ
+      localStorage.setItem('weddingAuth', 'true');
+      setIsAuthenticated(true);
+    } else {
+      // 間違っていればエラーを出す
+      setLoginError(true);
+      setPasswordInput('');
+    }
+  };
+
+
+  // ==========================================
+  // 2. メイン画面の各種設定
+  // ==========================================
   const [activeTab, setActiveTab] = useState('schedule');
   
-  // スライドショーの表示判定（セッションストレージに記録がない＝初回アクセス時のみ true）
   const [showIntro, setShowIntro] = useState(() => {
     return !sessionStorage.getItem('weddingIntroSeen');
   });
   
-  // フェードアウト中かどうかの判定
   const [isFading, setIsFading] = useState(false);
   
-  // 読み込み時に、配列の中からランダムに1枚の画像を選ぶ
   const [randomImage] = useState(() => {
     return introImages[Math.floor(Math.random() * introImages.length)];
   });
 
-  // スライドショーのアニメーションと終了処理
+  // スライドショーのアニメーション
   useEffect(() => {
-    if (!showIntro) return;
+    // ★ログインしていない時はスライドショーを動かさない
+    if (!isAuthenticated || !showIntro) return;
 
-    // 初回表示したことをブラウザに記憶させる（これでリロード時は出なくなります）
     sessionStorage.setItem('weddingIntroSeen', 'true');
 
-    // 2秒後にフェードアウト（透明になるアニメーション）を開始する
     const fadeTimer = setTimeout(() => {
       setIsFading(true);
     }, 2000);
 
-    // 3秒後（フェードアウト完了後）にスライドショー自体をDOMから完全に削除する
     const removeTimer = setTimeout(() => {
       setShowIntro(false);
     }, 3000);
 
-    // クリーンアップ
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
     };
-  }, [showIntro]);
+  }, [isAuthenticated, showIntro]);
 
-  // LINEブラウザで開かれたら外部ブラウザ（Safari/Chrome）へ自動で飛ばす
+  // LINEブラウザで開かれたら外部ブラウザへ自動で飛ばす
   useEffect(() => {
     if (navigator.userAgent.match(/Line/i)) {
       if (window.location.search.indexOf('openExternalBrowser=1') === -1) {
@@ -69,6 +95,50 @@ export default function App() {
     { time: "16:30", title: "お開き", desc: "ありがとうございました" },
   ];
 
+
+  // ==========================================
+  // 3. 画面の表示（パスワード画面 or メイン画面）
+  // ==========================================
+
+  // ★ログインしていない場合は、この「専用ログイン画面」を表示
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4 font-sans text-stone-800">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-100 w-full max-w-sm text-center animate-fade-in">
+          <div className="flex justify-center mb-4">
+            <Lock className="w-8 h-8 text-rose-300" />
+          </div>
+          <h1 className="text-2xl font-serif text-stone-700 mb-2">Photo Wedding</h1>
+          <p className="text-sm text-stone-500 mb-6">ゲスト専用ページです。<br/>ご案内のパスワードを入力してください。</p>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input 
+                type="password" 
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  setLoginError(false);
+                }}
+                className="w-full border border-stone-300 rounded-lg p-3 text-center focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 transition-shadow tracking-widest"
+                placeholder="パスワード"
+              />
+              {loginError && (
+                <p className="text-xs text-rose-500 mt-2 font-bold animate-pulse">
+                  パスワードが間違っています
+                </p>
+              )}
+            </div>
+            <button type="submit" className="w-full bg-rose-400 text-white font-bold py-3 rounded-lg shadow-md hover:bg-rose-500 transition-colors">
+              ログイン
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ★ログイン済みの場合は、こちらの「メイン画面」を表示
   return (
     <>
       {/* --- スライドショーのオーバーレイ画面 --- */}
@@ -173,7 +243,6 @@ export default function App() {
                 
                 <div className="w-full overflow-hidden rounded-lg">
                   <iframe 
-                    /* ↓↓↓ この srcの中身をご自身のGoogleフォームのURLに書き換えてください ↓↓↓ */
                     src="https://docs.google.com/forms/d/e/1FAIpQLScEfJ5EyVlPr5kWWOqe14ENMF2VcZF6AwK5qOGCMogcmzYIUA/viewform?usp=dialog" 
                     width="100%" 
                     height="600" 
@@ -202,7 +271,6 @@ export default function App() {
                 
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
                   <iframe 
-                    /* ↓↓↓ この srcの中身をご自身のGoogleマップのURLに書き換えてください ↓↓↓ */
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
                     width="100%" 
                     height="100%" 
