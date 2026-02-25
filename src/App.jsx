@@ -283,7 +283,7 @@ export default function App() {
                   <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
                 </h3>
                 <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
-                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町２丁目３ 丸井大宮店 7階</p>
+                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町2丁目3 丸井大宮店 7階</p>
                 
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
                   <iframe 
@@ -302,6 +302,31 @@ export default function App() {
                   <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
                 </div>
               </div>
+              
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-rose-500" /> 2次会 集合場所
+                </h3>
+                <p className="text-stone-600 font-bold mb-1">セレンディピティタータ</p>
+                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市西区指扇3547−9</p>
+                
+                <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12925.065372305058!2d139.5780144!3d35.9159802!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c53328d707b7%3A0x29a45e3e4ef77edb!2z44K744Os44Oz44OH44Kj44OU44OG44Kj44K_44O844K_!5e0!3m2!1sja!2sjp!4v1772027428159!5m2!1sja!2sjp" 
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen="" 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+                
+                <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
+                  <p> 西大宮駅から徒歩1分</p>
+                </div>
+              </div>
+
 
             </div>
           )}
