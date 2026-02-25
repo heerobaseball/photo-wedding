@@ -310,7 +310,7 @@ export default function App() {
               
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
                 <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-rose-500" /> 2次会 集合場所
+                  <MapPin className="w-4 h-4 text-rose-500" /> お茶会 集合場所
                 </h3>
                 <p className="text-stone-600 font-bold mb-1">セレンディピティタータ</p>
                 <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市西区指扇3547−9</p>
