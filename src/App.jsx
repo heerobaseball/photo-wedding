@@ -5,7 +5,7 @@ const introImages = ["/1.jpg", "/2.jpg"];
 
 export default function App() {
   // ==========================================
-  // 1. 状態管理（金庫から貰ったデータを保存する箱）
+  // 1. 状態管理
   // ==========================================
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -13,33 +13,34 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [weddingData, setWeddingData] = useState(null);
 
+  // 初回読み込み時の処理（記憶している「入場券」で金庫を開けに行く）
   useEffect(() => {
-    const savedPassword = localStorage.getItem('weddingPass');
-    if (savedPassword) {
-      fetchWeddingData(savedPassword);
+    const savedToken = localStorage.getItem('weddingToken'); // パスワードではなくトークンを取り出す
+    if (savedToken) {
+      fetchWeddingData(savedToken);
     } else {
       setIsLoading(false);
     }
   }, []);
 
-  const fetchWeddingData = async (password) => {
+  // ★入場券（トークン）を使って、裏側の金庫からデータを貰う関数
+  const fetchWeddingData = async (token) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/wedding-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password })
+        body: JSON.stringify({ token: token }) // パスワードではなくトークンを送る
       });
 
       if (response.ok) {
         const data = await response.json();
         setWeddingData(data);
-        localStorage.setItem('weddingPass', password);
         setIsAuthenticated(true);
       } else {
-        setLoginError(true);
-        setPasswordInput('');
-        localStorage.removeItem('weddingPass');
+        // トークンが無効だった場合、記憶を消去してログイン画面に戻す
+        localStorage.removeItem('weddingToken');
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error("通信エラーが発生しました");
@@ -48,9 +49,30 @@ export default function App() {
     }
   };
 
-  const handleLogin = (e) => {
+  // ★ログインボタンを押したときの処理（受付に行って入場券をもらう）
+  const handleLogin = async (e) => {
     e.preventDefault();
-    fetchWeddingData(passwordInput);
+    setIsLoading(true);
+    try {
+      const loginRes = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput })
+      });
+
+      if (loginRes.ok) {
+        const { token } = await loginRes.json();
+        localStorage.setItem('weddingToken', token); // もらった入場券をブラウザに記憶
+        await fetchWeddingData(token); // その入場券を使ってデータを取得
+      } else {
+        setLoginError(true);
+        setPasswordInput('');
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("通信エラーが発生しました");
+      setIsLoading(false);
+    }
   };
 
   // ==========================================

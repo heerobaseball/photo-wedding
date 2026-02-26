@@ -1,24 +1,18 @@
 export async function onRequestPost(context) {
-  const { request } = context;
-
   try {
-    // ゲストのスマホ（アプリ）から送られてきたパスワードを受け取る
-    const body = await request.json();
+    const body = await context.request.json();
 
-    // ★ここでパスワードチェック
-    if (body.password !== "hiro0321mami") {
+    // ★パスワードではなく、送られてきた「セッショントークン」が正しいかチェックします
+    if (body.token !== "sec_token_wedding_2026_xyz987") {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // パスワードが合っていたら、秘密のデータをまとめて返す
+    // トークンが正しければ、秘密のデータを返す
     const secretData = {
-      // フォームのURL
       formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScEfJ5EyVlPr5kWWOqe14ENMF2VcZF6AwK5qOGCMogcmzYIUA/viewform?usp=dialog",
-      
-      // ★追加：アクセス情報（施設名や住所など）
       access: {
         location1: {
           title: "集合場所",
@@ -37,8 +31,6 @@ export async function onRequestPost(context) {
           note2: "🚗 駐車場が御座いませんので、西大宮駅周辺のコインパーキングのご利用お願い致します"
         }
       },
-
-      // スケジュールデータ
       schedule: [
         { time: "12:50", title: "受付", desc: "現地で着替える場合、撮影開始20分前をめどにご到着ください" },
         { time: "13:00", title: "撮影開始", desc: "結婚式写真、その後自由撮影" },
