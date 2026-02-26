@@ -1,82 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, Heart, Sparkles, MessageSquare, Lock } from 'lucide-react';
 
-// スライドショー用の画像URL（この中からランダムで1枚選ばれます）
-const introImages = [
-  "/1.jpg",
-  "/2.jpg"
-];
-
-// ゲストに案内する共通パスワード（hiro0321mami）
-// ※ソースコード上で丸見えにならないよう、Base64形式に変換した文字列を設定しています。
-const ENCODED_PASSWORD = "aGlybzAzMjFtYW1p"; 
+const introImages = ["/1.jpg", "/2.jpg"];
 
 export default function App() {
   // ==========================================
-  // 1. ログイン状態の管理（ブラウザに記憶させます）
+  // 1. 状態管理（金庫から貰ったデータを保存する箱）
   // ==========================================
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // 過去にログインして記憶されていれば、最初から true にする
-    return localStorage.getItem('weddingAuth') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ロード中かどうか
+  
+  // ★金庫から受け取った秘密のデータを入れる箱
+  const [weddingData, setWeddingData] = useState(null);
+
+  // 初回読み込み時の処理（記憶しているパスワードで金庫を開けに行く）
+  useEffect(() => {
+    const savedPassword = localStorage.getItem('weddingPass');
+    if (savedPassword) {
+      fetchWeddingData(savedPassword);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // ★裏側の金庫（API）にパスワードを送って、データを貰う関数
+  const fetchWeddingData = async (password) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/wedding-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password }) // 入力されたパスワードを送る
+      });
+
+      if (response.ok) {
+        // パスワードが合っていて、データが貰えた場合
+        const data = await response.json();
+        setWeddingData(data);
+        localStorage.setItem('weddingPass', password); // パスワードをブラウザに記憶
+        setIsAuthenticated(true);
+      } else {
+        // パスワードが間違っていた場合
+        setLoginError(true);
+        setPasswordInput('');
+        localStorage.removeItem('weddingPass');
+      }
+    } catch (error) {
+      console.error("通信エラーが発生しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // ログインボタンを押したときの処理
   const handleLogin = (e) => {
     e.preventDefault();
-    
-    // 入力されたパスワードを裏側で変換し、暗号化された文字列と一致するか確認します
-    // ※btoa() は、半角英数字をBase64という形式に変換するブラウザの機能です
-    if (btoa(passwordInput) === ENCODED_PASSWORD) {
-      // パスワードが合っていれば記憶してメイン画面へ
-      localStorage.setItem('weddingAuth', 'true');
-      setIsAuthenticated(true);
-    } else {
-      // 間違っていればエラーを出す
-      setLoginError(true);
-      setPasswordInput('');
-    }
+    fetchWeddingData(passwordInput);
   };
-
 
   // ==========================================
   // 2. メイン画面の各種設定
   // ==========================================
   const [activeTab, setActiveTab] = useState('schedule');
-  
-  const [showIntro, setShowIntro] = useState(() => {
-    return !sessionStorage.getItem('weddingIntroSeen');
-  });
-  
-  // フェードインとフェードアウトの両方を管理するステート
+  const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('weddingIntroSeen'));
   const [isFadingIn, setIsFadingIn] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  
-  const [randomImage, setRandomImage] = useState(() => {
-    return introImages[Math.floor(Math.random() * introImages.length)];
-  });
+  const [randomImage, setRandomImage] = useState(introImages[0]);
 
-  // スライドショーのアニメーション
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * introImages.length);
+    setRandomImage(introImages[randomIndex]);
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated || !showIntro) return;
-
     sessionStorage.setItem('weddingIntroSeen', 'true');
-
-    // 1. 開いてすぐ（0.05秒後）に「写真と文字」がフワッと現れ始める
-    const fadeInTimer = setTimeout(() => {
-      setIsFadingIn(true);
-    }, 50);
-
-    // 2. 4秒後に「画面全体」がフワッと消え始める（フェードアウト）
-    const fadeOutTimer = setTimeout(() => {
-      setIsFadingOut(true);
-    }, 4000);
-
-    // 3. 5秒後に完全に画面をDOMから消す
-    const removeTimer = setTimeout(() => {
-      setShowIntro(false);
-    }, 5000);
+    const fadeInTimer = setTimeout(() => setIsFadingIn(true), 50);
+    const fadeOutTimer = setTimeout(() => setIsFadingOut(true), 4000);
+    const removeTimer = setTimeout(() => setShowIntro(false), 5000);
 
     return () => {
       clearTimeout(fadeInTimer);
@@ -85,35 +88,18 @@ export default function App() {
     };
   }, [isAuthenticated, showIntro]);
 
-  // LINEブラウザで開かれたら外部ブラウザへ自動で飛ばす
-  useEffect(() => {
-    if (navigator.userAgent.match(/Line/i)) {
-      if (window.location.search.indexOf('openExternalBrowser=1') === -1) {
-        const newUrl = window.location.href + (window.location.search ? '&' : '?') + 'openExternalBrowser=1';
-        window.location.href = newUrl;
-      }
-    }
-  }, []);
-
-  const scheduleData = [
-    { time: "12:50", title: "受付", desc: "現地で着替える場合、撮影開始20分前をめどにご到着ください" },
-    { time: "13:00", title: "撮影開始", desc: "結婚式写真、その後自由撮影" },
-    { time: "14:00", title: "撮影終了", desc: " " },
-    { time: "15:00", title: "お茶会", desc: (
-      <>
-        場所: <a href="https://maps.app.goo.gl/WnEiV2UgmZ7eTi827" target="_blank" rel="noopener noreferrer" className="text-rose-500 underline font-bold">セレンディピティタータ</a><br />アクセス : JR西大宮駅から徒歩5分
-      </>
-    )},
-    { time: "16:30", title: "お開き", desc: "ご参加ありがとうございました  お気をつけてお帰りください" },
-  ];
-
 
   // ==========================================
-  // 3. 画面の表示（パスワード画面 or メイン画面）
+  // 3. 画面の表示
   // ==========================================
 
-  // ★ログインしていない場合は、この「専用ログイン画面」を表示
-  if (!isAuthenticated) {
+  // ロード中（金庫に確認に行っている間）の画面
+  if (isLoading) {
+    return <div className="min-h-screen bg-rose-50 flex items-center justify-center font-serif text-rose-400">Loading...</div>;
+  }
+
+  // ログインしていない場合
+  if (!isAuthenticated || !weddingData) {
     return (
       <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4 font-sans text-stone-800">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-100 w-full max-w-sm text-center animate-fade-in">
@@ -135,11 +121,7 @@ export default function App() {
                 className="w-full border border-stone-300 rounded-lg p-3 text-center focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 transition-shadow tracking-widest"
                 placeholder="パスワード"
               />
-              {loginError && (
-                <p className="text-xs text-rose-500 mt-2 font-bold animate-pulse">
-                  パスワードが間違っています
-                </p>
-              )}
+              {loginError && <p className="text-xs text-rose-500 mt-2 font-bold animate-pulse">パスワードが間違っています</p>}
             </div>
             <button type="submit" className="w-full bg-rose-400 text-white font-bold py-3 rounded-lg shadow-md hover:bg-rose-500 transition-colors">
               ログイン
@@ -150,157 +132,82 @@ export default function App() {
     );
   }
 
-  // ★ログイン済みの場合は、こちらの「メイン画面」を表示
+  // ログイン済み（金庫からデータが届いた状態）の場合
   return (
     <>
-      {/* --- スライドショーのオーバーレイ画面 --- */}
       {showIntro && (
-        <div 
-          // 背景（bg-stone-900）は最初から不透明のままにし、消える時（isFadingOut）だけ透明にします
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${
-            isFadingOut ? 'opacity-0' : 'opacity-100'
-          }`}
-        >
-          {/* 中の画像と文字だけを透明からフワッと表示させます */}
-          <div 
-            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-              isFadingIn ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <img
-              src={randomImage}
-              alt="intro-slide"
-              className="absolute inset-0 w-full h-full object-contain"
-            />
-            {/* 画像の上に重ねるうっすらとした黒いフィルターと文字 */}
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden transition-opacity duration-1000 ease-in-out ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${isFadingIn ? 'opacity-100' : 'opacity-0'}`}>
+            <img src={randomImage} alt="intro-slide" className="absolute inset-0 w-full h-full object-contain" />
             <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center z-10">
-              <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">
-                Welcome
-              </h1>
+              <h1 className="text-4xl font-serif text-white tracking-widest animate-pulse drop-shadow-lg">Welcome</h1>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- 通常のメイン画面 --- */}
       <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-20">
-        {/* Header / Hero Section */}
         <div className="relative h-64 bg-rose-100 overflow-hidden animate-fade-in">
           <div className="absolute inset-0 bg-white/30 backdrop-blur-sm z-10"></div>
-          {/* Decorative Circles */}
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-60"></div>
           <div className="absolute top-20 right-10 w-32 h-32 bg-orange-100 rounded-full blur-3xl opacity-60"></div>
-          
           <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4">
             <p className="text-stone-500 tracking-widest text-sm mb-2">2026.03.21 (SAT)</p>
             <h1 className="text-3xl font-serif text-stone-700 mb-2">Photo Wedding</h1>
             <div className="flex items-center gap-3 text-lg font-medium text-stone-600">
-              <span>Hiroki</span>
-              <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
-              <span>Mami</span>
+              <span>Hiroki</span><Heart className="w-4 h-4 text-rose-400 fill-rose-400" /><span>Mami</span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200 shadow-sm flex justify-around p-2 animate-fade-in">
-          <button 
-            onClick={() => setActiveTab('schedule')}
-            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-          >
-            <Clock className="w-5 h-5 mb-1" />
-            当日の流れ
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('contact')}
-            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'contact' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-          >
-            <MessageSquare className="w-5 h-5 mb-1" />
-            備考・要望
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('access')}
-            className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}
-          >
-            <MapPin className="w-5 h-5 mb-1" />
-            アクセス
-          </button>
+          <button onClick={() => setActiveTab('schedule')} className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'schedule' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}><Clock className="w-5 h-5 mb-1" />当日の流れ</button>
+          <button onClick={() => setActiveTab('contact')} className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'contact' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}><MessageSquare className="w-5 h-5 mb-1" />備考・要望</button>
+          <button onClick={() => setActiveTab('access')} className={`flex flex-col items-center p-2 w-1/3 text-xs ${activeTab === 'access' ? 'text-rose-500 font-bold' : 'text-stone-400'}`}><MapPin className="w-5 h-5 mb-1" />アクセス</button>
         </div>
 
-        {/* Content Area */}
         <div className="max-w-md mx-auto p-6">
-          
-          {/* --- SCHEDULE TAB --- */}
           {activeTab === 'schedule' && (
             <div className="animate-fade-in">
-              <h2 className="text-xl font-serif text-center mb-6 flex items-center justify-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" /> Time Schedule
-              </h2>
+              <h2 className="text-xl font-serif text-center mb-6 flex items-center justify-center gap-2"><Sparkles className="w-5 h-5 text-yellow-500" /> Time Schedule</h2>
               <div className="relative border-l-2 border-rose-200 ml-3 space-y-8 pl-6 py-2">
-                {scheduleData.map((item, index) => (
+                {/* ★金庫から取り出した weddingData.schedule を使って表示します */}
+                {weddingData.schedule.map((item, index) => (
                   <div key={index} className="relative">
                     <div className="absolute -left-[31px] top-1 w-4 h-4 bg-rose-400 rounded-full border-2 border-white shadow-sm"></div>
                     <span className="text-sm font-bold text-rose-500 block mb-1">{item.time}</span>
                     <h3 className="text-lg font-medium text-stone-800">{item.title}</h3>
-                    <p className="text-stone-500 text-sm mt-1 leading-relaxed">{item.desc}</p>
+                    <p className="text-stone-500 text-sm mt-1 leading-relaxed whitespace-pre-wrap">{item.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* --- CONTACT TAB --- */}
           {activeTab === 'contact' && (
             <div className="animate-fade-in">
               <h2 className="text-xl font-serif text-center mb-6">Message</h2>
-              
               <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100">
-                <p className="text-sm text-stone-600 mb-2 px-3 pt-3 leading-relaxed">
-                  連絡事項などありましたら、こちらからお気軽にお知らせください。
-                </p>
-                
+                <p className="text-sm text-stone-600 mb-2 px-3 pt-3 leading-relaxed">連絡事項などありましたら、こちらからお気軽にお知らせください。</p>
                 <div className="w-full overflow-hidden rounded-lg">
-                  <iframe 
-                    src="https://docs.google.com/forms/d/e/1FAIpQLScEfJ5EyVlPr5kWWOqe14ENMF2VcZF6AwK5qOGCMogcmzYIUA/viewform?usp=dialog" 
-                    width="100%" 
-                    height="600" 
-                    frameBorder="0" 
-                    marginHeight="0" 
-                    marginWidth="0"
-                  >
-                    読み込んでいます…
-                  </iframe>
+                  {/* ★金庫から取り出した formUrl を使って表示します */}
+                  <iframe src={weddingData.formUrl} width="100%" height="600" frameBorder="0" marginHeight="0" marginWidth="0">読み込んでいます…</iframe>
                 </div>
               </div>
             </div>
           )}
 
-          {/* --- ACCESS TAB --- */}
           {activeTab === 'access' && (
             <div className="animate-fade-in">
               <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
-              
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
-                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-rose-500" /> 集合場所
-                </h3>
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-rose-500" /> 集合場所</h3>
                 <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
                 <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町2丁目3 丸井大宮店 7階</p>
-                
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
-                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3231.6375335291!2d139.62158349999999!3d35.90689210000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c1437a393069%3A0xc425bbc7d3396524!2z5bCP44GV44Gq57WQ5ama5byPIOWkp-WuruW6lw!5e0!3m2!1sja!2sjp!4v1771546356588!5m2!1sja!2sjp" 
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen="" 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
+                  {/* ★金庫から取り出した mapUrl1 を使って表示します */}
+                  <iframe src={weddingData.mapUrl1} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-                
                 <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
                   <p>🚃 大宮駅西口 徒歩1分</p>
                   <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
@@ -308,33 +215,20 @@ export default function App() {
               </div>
               
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
-                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-rose-500" /> お茶会 集合場所
-                </h3>
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-rose-500" /> お茶会 集合場所</h3>
                 <p className="text-stone-600 font-bold mb-1">セレンディピティタータ</p>
                 <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市西区指扇3547−9</p>
-                
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
-                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12925.065372305058!2d139.5780144!3d35.9159802!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c53328d707b7%3A0x29a45e3e4ef77edb!2z44K744Os44Oz44OH44Kj44OU44OG44Kj44K_44O844K_!5e0!3m2!1sja!2sjp!4v1772027428159!5m2!1sja!2sjp" 
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen="" 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
+                  {/* ★金庫から取り出した mapUrl2 を使って表示します */}
+                  <iframe src={weddingData.mapUrl2} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-                
                 <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
                   <p>🚃 西大宮駅から徒歩5分</p>
                   <p>🚗 駐車場が御座いませんので、西大宮駅周辺のコインパーキングのご利用お願い致します</p>
                 </div>
               </div>
-
             </div>
           )}
-
         </div>
       </div>
     </>
