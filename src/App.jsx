@@ -10,12 +10,9 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // ロード中かどうか
-  
-  // ★金庫から受け取った秘密のデータを入れる箱
+  const [isLoading, setIsLoading] = useState(true);
   const [weddingData, setWeddingData] = useState(null);
 
-  // 初回読み込み時の処理（記憶しているパスワードで金庫を開けに行く）
   useEffect(() => {
     const savedPassword = localStorage.getItem('weddingPass');
     if (savedPassword) {
@@ -25,24 +22,21 @@ export default function App() {
     }
   }, []);
 
-  // ★裏側の金庫（API）にパスワードを送って、データを貰う関数
   const fetchWeddingData = async (password) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/wedding-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password }) // 入力されたパスワードを送る
+        body: JSON.stringify({ password: password })
       });
 
       if (response.ok) {
-        // パスワードが合っていて、データが貰えた場合
         const data = await response.json();
         setWeddingData(data);
-        localStorage.setItem('weddingPass', password); // パスワードをブラウザに記憶
+        localStorage.setItem('weddingPass', password);
         setIsAuthenticated(true);
       } else {
-        // パスワードが間違っていた場合
         setLoginError(true);
         setPasswordInput('');
         localStorage.removeItem('weddingPass');
@@ -54,7 +48,6 @@ export default function App() {
     }
   };
 
-  // ログインボタンを押したときの処理
   const handleLogin = (e) => {
     e.preventDefault();
     fetchWeddingData(passwordInput);
@@ -88,17 +81,22 @@ export default function App() {
     };
   }, [isAuthenticated, showIntro]);
 
+  useEffect(() => {
+    if (navigator.userAgent.match(/Line/i)) {
+      if (window.location.search.indexOf('openExternalBrowser=1') === -1) {
+        const newUrl = window.location.href + (window.location.search ? '&' : '?') + 'openExternalBrowser=1';
+        window.location.href = newUrl;
+      }
+    }
+  }, []);
 
   // ==========================================
   // 3. 画面の表示
   // ==========================================
-
-  // ロード中（金庫に確認に行っている間）の画面
   if (isLoading) {
     return <div className="min-h-screen bg-rose-50 flex items-center justify-center font-serif text-rose-400">Loading...</div>;
   }
 
-  // ログインしていない場合
   if (!isAuthenticated || !weddingData) {
     return (
       <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4 font-sans text-stone-800">
@@ -132,7 +130,6 @@ export default function App() {
     );
   }
 
-  // ログイン済み（金庫からデータが届いた状態）の場合
   return (
     <>
       {showIntro && (
@@ -171,7 +168,6 @@ export default function App() {
             <div className="animate-fade-in">
               <h2 className="text-xl font-serif text-center mb-6 flex items-center justify-center gap-2"><Sparkles className="w-5 h-5 text-yellow-500" /> Time Schedule</h2>
               <div className="relative border-l-2 border-rose-200 ml-3 space-y-8 pl-6 py-2">
-                {/* ★金庫から取り出した weddingData.schedule を使って表示します */}
                 {weddingData.schedule.map((item, index) => (
                   <div key={index} className="relative">
                     <div className="absolute -left-[31px] top-1 w-4 h-4 bg-rose-400 rounded-full border-2 border-white shadow-sm"></div>
@@ -190,7 +186,6 @@ export default function App() {
               <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100">
                 <p className="text-sm text-stone-600 mb-2 px-3 pt-3 leading-relaxed">連絡事項などありましたら、こちらからお気軽にお知らせください。</p>
                 <div className="w-full overflow-hidden rounded-lg">
-                  {/* ★金庫から取り出した formUrl を使って表示します */}
                   <iframe src={weddingData.formUrl} width="100%" height="600" frameBorder="0" marginHeight="0" marginWidth="0">読み込んでいます…</iframe>
                 </div>
               </div>
@@ -200,33 +195,37 @@ export default function App() {
           {activeTab === 'access' && (
             <div className="animate-fade-in">
               <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
+              
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
-                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-rose-500" /> 集合場所</h3>
-                <p className="text-stone-600 font-bold mb-1">小さな結婚式 大宮店</p>
-                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市大宮区桜木町2丁目3 丸井大宮店 7階</p>
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-rose-500" /> {weddingData.access.location1.title}
+                </h3>
+                <p className="text-stone-600 font-bold mb-1">{weddingData.access.location1.name}</p>
+                <p className="text-sm text-stone-500 mb-3">{weddingData.access.location1.address}</p>
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
-                  {/* ★金庫から取り出した mapUrl1 を使って表示します */}
-                  <iframe src={weddingData.mapUrl1} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                  <iframe src={weddingData.access.location1.mapUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                 </div>
                 <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
-                  <p>🚃 大宮駅西口 徒歩1分</p>
-                  <p>🚗 近くにコインパーキング有 (DOM地下・立体駐車場)</p>
+                  <p>{weddingData.access.location1.note1}</p>
+                  <p>{weddingData.access.location1.note2}</p>
                 </div>
               </div>
               
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
-                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-rose-500" /> お茶会 集合場所</h3>
-                <p className="text-stone-600 font-bold mb-1">セレンディピティタータ</p>
-                <p className="text-sm text-stone-500 mb-3">埼玉県さいたま市西区指扇3547−9</p>
+                <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-rose-500" /> {weddingData.access.location2.title}
+                </h3>
+                <p className="text-stone-600 font-bold mb-1">{weddingData.access.location2.name}</p>
+                <p className="text-sm text-stone-500 mb-3">{weddingData.access.location2.address}</p>
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
-                  {/* ★金庫から取り出した mapUrl2 を使って表示します */}
-                  <iframe src={weddingData.mapUrl2} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                  <iframe src={weddingData.access.location2.mapUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                 </div>
                 <div className="bg-stone-100 rounded p-3 text-xs text-stone-600">
-                  <p>🚃 西大宮駅から徒歩5分</p>
-                  <p>🚗 駐車場が御座いませんので、西大宮駅周辺のコインパーキングのご利用お願い致します</p>
+                  <p>{weddingData.access.location2.note1}</p>
+                  <p>{weddingData.access.location2.note2}</p>
                 </div>
               </div>
+
             </div>
           )}
         </div>
