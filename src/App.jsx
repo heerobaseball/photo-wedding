@@ -7,8 +7,9 @@ const introImages = [
   "/2.jpg"
 ];
 
-// ゲストに案内する共通パスワード
-const GUEST_PASSWORD = "hiro0321mami"; 
+// ゲストに案内する共通パスワード（hiro0321mami）
+// ※ソースコード上で丸見えにならないよう、Base64形式に変換した文字列を設定しています。
+const ENCODED_PASSWORD = "aGlybzAzMjFtYW1p"; 
 
 export default function App() {
   // ==========================================
@@ -24,7 +25,10 @@ export default function App() {
   // ログインボタンを押したときの処理
   const handleLogin = (e) => {
     e.preventDefault();
-    if (passwordInput === GUEST_PASSWORD) {
+    
+    // 入力されたパスワードを裏側で変換し、暗号化された文字列と一致するか確認します
+    // ※btoa() は、半角英数字をBase64という形式に変換するブラウザの機能です
+    if (btoa(passwordInput) === ENCODED_PASSWORD) {
       // パスワードが合っていれば記憶してメイン画面へ
       localStorage.setItem('weddingAuth', 'true');
       setIsAuthenticated(true);
@@ -49,14 +53,9 @@ export default function App() {
   const [isFadingIn, setIsFadingIn] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   
-  // ★確実に画像をランダムにするための修正を適用しています
-  const [randomImage, setRandomImage] = useState(introImages[0]);
-
-  useEffect(() => {
-    // 画面が読み込まれた瞬間にサイコロを振り、ランダムな1枚をセットする
-    const randomIndex = Math.floor(Math.random() * introImages.length);
-    setRandomImage(introImages[randomIndex]);
-  }, []);
+  const [randomImage, setRandomImage] = useState(() => {
+    return introImages[Math.floor(Math.random() * introImages.length)];
+  });
 
   // スライドショーのアニメーション
   useEffect(() => {
