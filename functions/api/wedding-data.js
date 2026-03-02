@@ -27,6 +27,7 @@ export async function onRequestPost(context) {
           name: "セレンディピティタータ",
           address: "埼玉県さいたま市西区指扇3547−9",
           mapUrl: "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12925.065372305058!2d139.5780144!3d35.9159802!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018c53328d707b7%3A0x29a45e3e4ef77edb!2z44K744Os44Oz44OH44Kj44OU44OG44Kj44K_44O844K_!5e0!3m2!1sja!2sjp!4v1772027428159!5m2!1sja!2sjp",
+          siteUrl: "https://tabelog.com/saitama/A1101/A110103/11058893/",
           note1: "🚃 西大宮駅から徒歩5分",
           note2: "🚗 駐車場が御座いませんので、西大宮駅周辺のコインパーキングのご利用お願い致します"
         }

@@ -13,9 +13,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [weddingData, setWeddingData] = useState(null);
 
-  // 初回読み込み時の処理（記憶している「入場券」で金庫を開けに行く）
+  // 初回読み込み時の処理
   useEffect(() => {
-    const savedToken = localStorage.getItem('weddingToken'); // パスワードではなくトークンを取り出す
+    const savedToken = localStorage.getItem('weddingToken');
     if (savedToken) {
       fetchWeddingData(savedToken);
     } else {
@@ -23,14 +23,13 @@ export default function App() {
     }
   }, []);
 
-  // ★入場券（トークン）を使って、裏側の金庫からデータを貰う関数
   const fetchWeddingData = async (token) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/wedding-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: token }) // パスワードではなくトークンを送る
+        body: JSON.stringify({ token: token })
       });
 
       if (response.ok) {
@@ -38,7 +37,6 @@ export default function App() {
         setWeddingData(data);
         setIsAuthenticated(true);
       } else {
-        // トークンが無効だった場合、記憶を消去してログイン画面に戻す
         localStorage.removeItem('weddingToken');
         setIsAuthenticated(false);
       }
@@ -49,7 +47,6 @@ export default function App() {
     }
   };
 
-  // ★ログインボタンを押したときの処理（受付に行って入場券をもらう）
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -62,8 +59,8 @@ export default function App() {
 
       if (loginRes.ok) {
         const { token } = await loginRes.json();
-        localStorage.setItem('weddingToken', token); // もらった入場券をブラウザに記憶
-        await fetchWeddingData(token); // その入場券を使ってデータを取得
+        localStorage.setItem('weddingToken', token);
+        await fetchWeddingData(token);
       } else {
         setLoginError(true);
         setPasswordInput('');
@@ -218,6 +215,7 @@ export default function App() {
             <div className="animate-fade-in">
               <h2 className="text-xl font-serif text-center mb-6">Access & Contact</h2>
               
+              {/* 大宮店の情報 */}
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
                 <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-rose-500" /> {weddingData.access.location1.title}
@@ -233,11 +231,28 @@ export default function App() {
                 </div>
               </div>
               
+              {/* セレンディピティタータ（2次会）の情報 */}
               <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-100 mb-4">
                 <h3 className="font-bold text-stone-800 mb-2 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-rose-500" /> {weddingData.access.location2.title}
                 </h3>
-                <p className="text-stone-600 font-bold mb-1">{weddingData.access.location2.name}</p>
+                
+                {/* ★追加：店舗名と食べログリンクを横並びで表示 */}
+                <div className="flex items-baseline gap-3 mb-1">
+                  <p className="text-stone-600 font-bold">{weddingData.access.location2.name}</p>
+                  {/* 金庫から届いたURLがある場合のみリンクを表示 */}
+                  {weddingData.access.location2.siteUrl && (
+                    <a 
+                      href={weddingData.access.location2.siteUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-rose-500 underline hover:text-rose-600 transition-colors"
+                    >
+                      食べログを見る
+                    </a>
+                  )}
+                </div>
+                
                 <p className="text-sm text-stone-500 mb-3">{weddingData.access.location2.address}</p>
                 <div className="w-full h-48 mb-3 rounded-lg overflow-hidden border border-stone-200">
                   <iframe src={weddingData.access.location2.mapUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
